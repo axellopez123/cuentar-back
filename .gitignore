@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# Environment variables
+.env
+.env.local
+
+# Database / SQLite (if used locally)
+*.sqlite3
+*.db
+
+# Storage / Uploads (preserve folder structure with .gitkeep)
+storage/uploads/*
+!storage/uploads/receipts/
+storage/uploads/receipts/*
+!storage/uploads/receipts/.gitkeep
+!storage/uploads/statements/
+storage/uploads/statements/*
+!storage/uploads/statements/.gitkeep
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+

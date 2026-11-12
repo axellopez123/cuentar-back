@@ -1,6 +1,6 @@
 import json
 from typing import Any, List, Optional, Union
-from pydantic import computed_field, field_validator
+from pydantic import Field, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -24,21 +24,25 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
 
     # Database Settings
+    CUSTOM_DATABASE_URL: Optional[str] = Field(None, alias="DATABASE_URL")
+    USE_SQLITE_DEV: bool = False
+
     POSTGRES_SERVER: str = "localhost"
     POSTGRES_PORT: int = 5432
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "postgres"
     POSTGRES_DB: str = "cuentar_db"
-    
-    # Custom direct database URL override (optional)
-    CUSTOM_DATABASE_URL: Optional[str] = None
-    USE_SQLITE_DEV: bool = True
 
     @computed_field
     @property
     def DATABASE_URL(self) -> str:
-        if self.CUSTOM_DATABASE_URL:
-            return self.CUSTOM_DATABASE_URL
+        url = self.CUSTOM_DATABASE_URL
+        if url:
+            if url.startswith("postgres://"):
+                url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+            elif url.startswith("postgresql://") and not url.startswith("postgresql+asyncpg://"):
+                url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+            return url
         if self.USE_SQLITE_DEV:
             return "sqlite+aiosqlite:///./cuentar_dev.db"
         return (

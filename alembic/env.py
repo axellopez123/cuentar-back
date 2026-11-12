@@ -20,8 +20,14 @@ import app.models  # Ensure all models are registered
 # access to the values within the .ini file in use.
 config = context.config
 
-# Dynamically set the database URL from settings
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+# Dynamically set the database URL from OS environment variable or settings
+db_url = os.getenv("DATABASE_URL") or settings.DATABASE_URL
+if db_url.startswith("postgres://"):
+    db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+asyncpg://"):
+    db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+config.set_main_option("sqlalchemy.url", db_url)
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:

@@ -1,5 +1,6 @@
-from typing import List, Optional
-from pydantic import computed_field
+import json
+from typing import Any, List, Optional, Union
+from pydantic import computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -55,13 +56,30 @@ class Settings(BaseSettings):
         "application/pdf",
     ]
 
-    # CORS
+    # CORS Allowed Origins
     CORS_ORIGINS: List[str] = [
+        "https://cuentar.arwax.pro",
+        "http://cuentar.arwax.pro",
         "http://localhost:3000",
-        "http://localhost:5173",
         "http://127.0.0.1:3000",
+        "http://localhost:5173",
         "http://127.0.0.1:5173",
     ]
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def assemble_cors_origins(cls, v: Any) -> List[str]:
+        if isinstance(v, str):
+            v_trimmed = v.strip()
+            if v_trimmed.startswith("[") and v_trimmed.endswith("]"):
+                try:
+                    return json.loads(v_trimmed)
+                except Exception:
+                    pass
+            return [origin.strip() for origin in v_trimmed.split(",") if origin.strip()]
+        elif isinstance(v, (list, set, tuple)):
+            return [str(origin).strip() for origin in v]
+        return []
 
 
 settings = Settings()
